@@ -35,56 +35,82 @@
 */
 
 #include <LTC2633.h>
-LTC2633 myDAC;                              /*declare*/
+LTC2633 myDAC;                  /*declare*/
 
 /*
   NOTE #1:  Please follow the keyword table given below
   +--------------+--------------+-----------------------------------------+
   |     Type     |  Variables   |                Constants                |
   +--------------+--------------+-----------------------------------------+
-  | I2C Address  | BOX, box     | NC, nc,                                 |
+  |              |              | NC, nc,                                 |
   |              |              | GND, gnd,                               |
-  |              |              | VCC, vcc,                               |
-  |              |              | ALL, all,                               |
-  |              |              | GLOBAL, global,                         |
-  |              |              | CUSTOM, custom                          |
-  +--------------+--------------+-----------------------------------------+
-  | DAC Register | DAC, dac     | DAC0, dac0,                             |
-  |              |              | DAC1, dac1,                             |
+  | I2C Address  |              | VCC, vcc,                               |
+  | (Global=All) |              | ALL, all,                               |
+  |              | DAC, dac     | GLOBAL, global,                         |
+  |              |(uint8_t type)| CUSTOM, custom                          |
+  +--------------+              +-----------------------------------------+
+  |              |              | DAC0, dac0,                             |
+  | DAC Register |              | DAC1, dac1,                             |
   |              |              | BOTH, both                              |
   +--------------+--------------+-----------------------------------------+
-  | Resolution   | BITS, bits   | VIII, viii,                             |
-  |              |              | X, x,                                   |
-  |              |              | XII, xii                                |
+  +#######################################################################+
   +--------------+--------------+-----------------------------------------+
-  | Frequency    | RATE, rate   | SLOW, slow,                             |
-  |              |              | FAST, fast                              |
-  +--------------+--------------+-----------------------------------------+
-  | Extras       | DATA, data,  | write_input_reg, update_dac_reg,        |
-  |              | VALUE, value | write_update_all, write_update_dac,     |
-  |              |              | power_down_dac, power_down_all,         |
-  |              |              | internal_reference, external_reference, |
+  |              |              | write_input_reg, update_dac_reg,        |
+  |              | DATA, data,  | write_update_all, write_update_dac,     |
+  | Extras       | VALUE, value | power_down_dac, power_down_all,         |
+  |              | (unsigned)   | internal_reference, external_reference, |
   |              |              | no_operation                            |
   +--------------+--------------+-----------------------------------------+
 */
 
-#define bits xii                            /*Resolution is set here*/
-
 void setup()
 {
-  myDAC.begin(global, bits, fast);
+  myDAC.link(all);
   /*
-    ABOUT : Initialize with Address, Resolution and Frequency
+    ABOUT : Initialize with Address
 
-    USAGE : Takes two 8bits (byte) value and a boolean as input
+    USAGE : Takes 8bits of I2C Address (byte) as input
 
     ACCEPTED FORMATS :
-    <put name here>.begin();
-    <put name here>.begin(Address);
-    <put name here>.begin(Address, Resolution);
-    <put name here>.begin(Address, Resolution, Frequency);
+    <put name here>.link();
+    <put name here>.link(Address);
 
-    Note #2: Resolution value other than 8, 10 or 12 will be rejected and program will switch to 12 bits resolution setup
+    EXAMPLES:
+    myDAC.link();               //Switch 'myDAC' to default configuration: Address = GLOBAL (0x73)
+    myDAC.link(VCC);            //Switch 'myDAC' to given configuration: Address = VCC (0x12)
+ */
+
+  myDAC.fast();
+  /*
+    ABOUT : Set I2C clock frequency to 400KHz
+
+    USAGE : It's a void type function can be used just by calling it
+
+    ACCEPTED FORMATS :
+    <put name here>.fast();
+
+    EXAMPLES:
+    myDAC.fast();               //Set I2C clock frequency to 400KHz
+ */
+
+  myDAC.x0C();
+  /*
+    ABOUT : Defines LTC2633 resolution as 12bits
+
+    USAGE : It's a void type function can be used just by calling it
+
+    ACCEPTED FORMATS :
+    <put name here>.x0C();
+
+    Note #2: Unless changed by calling proper function listed below, system initializes to 12 bits resolution setup.
+
+	+-----------------------+-------------+-------------------------------+
+	|    Function Usage     |   Example   |           Operation           |
+	+-----------------------+-------------+-------------------------------+
+	| <put name here>.x08() | myDAC.x08() | Defines resolution as 8 bits  |
+	| <put name here>.x0A() | myDAC.x0A() | Defines resolution as 10 bits |
+	| <put name here>.x0C() | myDAC.x0C() | Defines resolution as 12 bits |
+	+-----------------------+-------------+-------------------------------+
 
     WARNING #2: Even when using values 8, 10 or 12, make sure its according to LTC2633 specification.
 
@@ -99,23 +125,20 @@ void setup()
     +------+------------------------------------------+
 
     EXAMPLES:
-    myDAC.begin();                         //Switch 'myDAC' to default configuration: Address = GLOBAL, Resolution = 12, Frequency = FAST
-    myDAC.begin(VCC);                      //Switch 'myDAC' to default configuration: Resolution = 12, Frequency = HIGH
-    myDAC.begin(NC, XII);                  //Given, 'Resolution' value is supplied, Switch 'myDAC' to default configuration: Frequency = FAST
-    myDAC.begin(GND, BITS, SLOW);          //'Resolution' value for 'myDAC' must be supplied
+    myDAC.x08();                //Defines resolution as 8 bits
  */
 
   myDAC.externalReference();
    /*
     ABOUT : Instructs LTC2633 to switch to external reference mode and allows user to use the DAC with external reference voltage
 
-    USAGE : It's a void type funcion can be used just by calling it
+    USAGE : It's a void type function can be used just by calling it
 
     ACCEPTED FORMAT:
     <put name here>.externalReference();
 
     EXAMPLE:
-    myDAC.externalReference()              //For 'myDAC'
+    myDAC.externalReference()   //For 'myDAC'
   */
 
   /*
@@ -136,19 +159,19 @@ void setup()
   /*
     ABOUT : Instructs LTC2633 to switch to internal reference mode and allows user to use the DAC with internal reference voltage
 
-    USAGE : It's a void type funcion can be used just by calling it
+    USAGE : It's a void type function can be used just by calling it
 
     ACCEPTED FORMAT:
     <put name here>.internalReference();
 
     EXAMPLE:
-    myDAC.internalReference()              //For 'myDAC'
+    myDAC.internalReference();  //For 'myDAC'
   */
 }
 
 void loop()
 {
-  uint64_t value = random(0, pow(2, bits)); /*generate a random number in range (for testing purposes only)*/
+  uint64_t value = random(0, pow(2, 12)); /*generate a random number in range (for testing purposes only)*/
 
   myDAC.store(value);
   /*
@@ -161,11 +184,11 @@ void loop()
     <put name here>.store(VALUE, DAC);
 
     EXAMPLES:
-    myDAC.store(value);                    //Given, 'value' is supplied, switch 'myDAC' to default configuration: DAC = BOTH
-    myDAC.store(value, DAC0);              //For 'myDAC', 'value' must be supplied
+    myDAC.store(value);         //Given, 'value' is supplied, switch 'myDAC' to default configuration: DAC = BOTH
+    myDAC.store(value, DAC0);   //For 'myDAC', 'value' must be supplied
   */
 
-  myDAC.update(BOTH);
+  myDAC.load(BOTH);
   /*
     ABOUT : Instructs LTC2633 to transfer its input register data to respective DAC register
 
@@ -174,27 +197,27 @@ void loop()
     Note  : Recommended to use after 'value' is '<put name here>.store()' -ed earlier
 
     ACCEPTED FORMATS:
-    <put name here>.update();
-    <put name here>.update(DAC);
+    <put name here>.load();
+    <put name here>.load(DAC);
 
     EXAMPLES:
-    myDAC.update();                        //Switch 'myDAC' to default configuration: DAC = BOTH
-    myDAC.update(DAC0);
+    myDAC.load();               //Switch 'myDAC' to default configuration: DAC = BOTH
+    myDAC.load(DAC0);
   */
 
-  myDAC.write(value, both);
+  myDAC.volt(value, both);
   /*
     ABOUT : Stores 'value' to DAC register of LTC2633
 
     USAGE : Takes 64bit unsigned DATA (unsigned long long int) and 8bits (byte) of DAC register address
 
     ACCEPTED FORMATS:
-    <put name here>.write(VALUE);
-    <put name here>.write(VALUE, DAC);
+    <put name here>.volt(VALUE);
+    <put name here>.volt(VALUE, DAC);
 
     EXAMPLES:
-    myDAC.write(value);                    //Given, 'value' is supplied, switch 'myDAC' to default configuration: DAC = BOTH
-    myDAC.write(value, DAC0);              //For 'myDAC', 'value' must be supplied
+    myDAC.volt(value);          //Given, 'value' is supplied, switch 'myDAC' to default configuration: DAC = BOTH
+    myDAC.volt(value, DAC0);    //For 'myDAC', 'value' must be supplied
   */
 
   myDAC.powerDown();
@@ -208,8 +231,8 @@ void loop()
     <put name here>.powerDown(DAC);
 
     EXAMPLES:
-    myDAC.powerDown();                     //Switch 'myDAC' to default configuration: DAC = BOTH
-    myDAC.powerDown(DAC0);                 //For 'myDAC'
+    myDAC.powerDown();          //Switch 'myDAC' to default configuration: DAC = BOTH
+    myDAC.powerDown(DAC0);      //For 'myDAC'
   */
 
   myDAC.powerOff();
@@ -222,6 +245,6 @@ void loop()
     <put name here>.powerDown();
 
     EXAMPLE:
-    myDAC.powerOff();                      //For 'myDAC'
+    myDAC.powerOff();           //For 'myDAC'
   */
 }
