@@ -2,7 +2,7 @@
 
 ## Table of Contents
 - [About](#About)
-- [Feedback](#feedback)
+- [Social](#social)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
 
