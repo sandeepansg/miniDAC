@@ -1,7 +1,7 @@
 <h1 align="center"> Arduino miniDAC Module </h1> <br>
 
 ## Table of Contents
-- [About](#About)
+- [About](#about)
 - [Social](#social)
 - [License](#license)
 - [Acknowledgments](#acknowledgments)
